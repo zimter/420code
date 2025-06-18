@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>420 Jahre Garantie</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 2em; background: #f0f0f0; }
+  #login, #app { max-width: 600px; margin: auto; background: white; padding: 1.5em; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.1);}
+  #app { display: none; }
+  label, input, textarea, button { display: block; width: 100%; margin-bottom: 1em; font-size: 1rem; }
+  textarea { height: 120px; font-family: monospace; }
+  button { cursor: pointer; padding: 0.6em; background-color: #007bff; border: none; color: white; border-radius: 4px; }
+  button:hover { background-color: #0056b3; }
+  .error { color: red; margin-bottom: 1em; }
+</style>
+<script>
+  // Hilfsfunktion um ArrayBuffer in Hex umzuwandeln
+  function bufferToHex(buffer) {
+    return [...new Uint8Array(buffer)]
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return bufferToHex(hashBuffer);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const loginDiv = document.getElementById("login");
+    const appDiv = document.getElementById("app");
+    const loginForm = document.getElementById("login-form");
+    const passwordInput = document.getElementById("password");
+    const errorMsg = document.getElementById("error-msg");
+
+    // 
+    const storedHash = "508d855dbedfd11833271cc1969354e65b2a9e5b0295a3aea3d14aca6ba875b5";
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const inputPwd = passwordInput.value.trim();
+      if (!inputPwd) {
+        errorMsg.textContent = "Bitte Passwort eingeben.";
+        return;
+      }
+      const inputHash = await hashPassword(inputPwd);
+      if (inputHash === storedHash) {
+        loginDiv.style.display = "none";
+        appDiv.style.display = "block";
+        passwordInput.value = "";
+        errorMsg.textContent = "";
+      } else {
+        errorMsg.textContent = "Falsches Passwort.";
+        passwordInput.value = "";
+      }
+    });
+
+    // Kopieren-Button funktioniert wie gehabt
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      const output = document.getElementById("outputText");
+      output.select();
+      output.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(output.value).then(() => {
+        alert("Text kopiert!");
+      }).catch(() => {
+        alert("Kopieren fehlgeschlagen. Bitte manuell kopieren.");
+      });
+    });
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script> <!-- Für AES Verschlüsselung -->
+<script>
+  // Der restliche Code für deine dreifache AES Verschlüsselung & Entschlüsselung
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const key1 = CryptoJS.enc.Hex.parse("2f8d14e391d54a0f7b3a9c8b12e4eaf5");
+    const key2 = CryptoJS.enc.Hex.parse("b4e725d1ac6f4c3b8901eaf4d9f3b267");
+    const key3 = CryptoJS.enc.Hex.parse("99cde74b2a1378904f2e5b7a9d8c1f30");
+
+    document.getElementById("encryptBtn").addEventListener("click", () => {
+      const input = document.getElementById("inputText").value;
+      if (!input) return alert("Bitte einen Text zum Verschlüsseln eingeben.");
+
+      let ciphertext = CryptoJS.AES.encrypt(input, key1, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: key1 }).toString();
+      ciphertext = CryptoJS.AES.encrypt(ciphertext, key2, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: key2 }).toString();
+      ciphertext = CryptoJS.AES.encrypt(ciphertext, key3, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: key3 }).toString();
+
+      document.getElementById("outputText").value = ciphertext;
+    });
+
+    document.getElementById("decryptBtn").addEventListener("click", () => {
+      const input = document.getElementById("inputText").value;
+      if (!input) return alert("Bitte einen Text zum Entschlüsseln eingeben.");
+
+      try {
+        let decrypted = CryptoJS.AES.decrypt(input, key3, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: key3 }).toString(CryptoJS.enc.Utf8);
+        decrypted = CryptoJS.AES.decrypt(decrypted, key2, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: key2 }).toString(CryptoJS.enc.Utf8);
+        decrypted = CryptoJS.AES.decrypt(decrypted, key1, { mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7, iv: key1 }).toString(CryptoJS.enc.Utf8);
+        if (!decrypted) throw "Fehler";
+        document.getElementById("outputText").value = decrypted;
+      } catch {
+        alert("Entschlüsselung fehlgeschlagen. Bitte überprüfen Sie den Eingabetext.");
+      }
+    });
+  });
+</script>
+</head>
+<body>
+
+<div id="login">
+  <h2>Bitte Passwort eingeben</h2>
+  <form id="login-form">
+    <input type="password" id="password" placeholder="Passwort" autocomplete="off" required />
+    <div class="error" id="error-msg"></div>
+    <button type="submit">Einloggen</button>
+  </form>
+</div>
+
+<div id="app">
+  <h1>420 Jahre Garantie</h1>
+  <label for="inputText">Text eingeben (zum Verschlüsseln oder Entschlüsseln):</label>
+  <textarea id="inputText" placeholder="Hier deinen Text eingeben..."></textarea>
+  
+  <button id="encryptBtn">Verschlüsseln</button>
+  <button id="decryptBtn">Entschlüsseln</button>
+  
+  <label for="outputText">Ergebnis:</label>
+  <textarea id="outputText" readonly></textarea>
+  <button id="copyBtn">Ausgabe kopieren</button>
+</div>
+
+</body>
+</html>
