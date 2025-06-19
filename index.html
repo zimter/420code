@@ -15,7 +15,7 @@
   .error { color: red; margin-bottom: 1em; }
 </style>
 <script>
-  // Hilfsfunktion um ArrayBuffer in Hex umzuwandeln
+
   function bufferToHex(buffer) {
     return [...new Uint8Array(buffer)]
       .map(b => b.toString(16).padStart(2, "0"))
@@ -58,7 +58,7 @@
       }
     });
 
-    // Kopieren-Button funktioniert wie gehabt
+  
     document.getElementById("copyBtn").addEventListener("click", () => {
       const output = document.getElementById("outputText");
       output.select();
@@ -71,9 +71,9 @@
     });
   });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script> <!-- Für AES Verschlüsselung -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script>
-  // Der restliche Code für deine dreifache AES Verschlüsselung & Entschlüsselung
+ 
 
   document.addEventListener("DOMContentLoaded", () => {
     const key1 = CryptoJS.enc.Hex.parse("2f8d14e391d54a0f7b3a9c8b12e4eaf5");
